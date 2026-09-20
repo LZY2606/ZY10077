@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>迁移故障演练台</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>迁移故障演练台</h1>
+      <p>隔离副本 · WAL 恢复 · 双写窗口 · 结构/数据/日志终局证明</p>
+    </div>
+    <span id="health" class="pill">连接中…</span>
+  </header>
+
+  <main>
+    <section class="grid two">
+      <article class="card">
+        <div class="card-title">
+          <h2>迁移定义</h2>
+          <div class="actions">
+            <select id="definitionVersion"></select>
+            <button id="loadDefinition">载入</button>
+            <button id="newBranch" class="secondary">保存为分支</button>
+          </div>
+        </div>
+        <p class="muted">修改后的定义不会覆盖旧版本；运行永久绑定提交时的定义指纹。</p>
+        <textarea id="definitionEditor" spellcheck="false"></textarea>
+        <div id="definitionMeta" class="meta"></div>
+        <div id="conflictBox" class="conflict hidden"></div>
+      </article>
+
+      <article class="card">
+        <div class="card-title">
+          <h2>启动隔离运行</h2>
+          <div class="actions">
+            <button id="createRun">创建副本</button>
+            <button id="runSuite" class="secondary">全套故障演练</button>
+          </div>
+        </div>
+        <label>故障点
+          <select id="faultPoint">
+            <option value="">无故障，完整迁移</option>
+          </select>
+        </label>
+        <label>退出方式
+          <select id="exitMode">
+            <option value="simulate">simulate：进程内退出，便于连续演练</option>
+            <option value="halt">halt：Runtime.halt(86) 真实进程退出</option>
+          </select>
+        </label>
+        <label>运行名称
+          <input id="runName" placeholder="自动生成">
+        </label>
+        <div class="actions wrap">
+          <button id="startRun">启动并推进</button>
+          <button id="resumeRun">安全继续</button>
+          <button id="rollbackRun" class="danger">补偿回滚</button>
+          <button id="recoverRun" class="secondary">模拟重启判定</button>
+          <button id="insertRow" class="secondary">双写窗口插入新行</button>
+        </div>
+        <div id="suiteResult"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>运行列表</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>名称</th><th>状态</th><th>步骤</th><th>游标</th><th>指纹</th></tr></thead>
+            <tbody id="runsBody"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="card">
+        <h2>当前状态与诊断</h2>
+        <pre id="runStatus" class="status"></pre>
+      </article>
+    </section>
+
+    <section class="grid three">
+      <article class="card">
+        <h2>批次</h2>
+        <div id="batches" class="stack"></div>
+      </article>
+      <article class="card">
+        <h2>校验摘要</h2>
+        <div id="verifications" class="stack"></div>
+      </article>
+      <article class="card">
+        <h2>恢复日志</h2>
+        <div id="events" class="events"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <div class="card-title">
+          <h2>演练证据</h2>
+          <button id="copyEvidence" class="secondary">复制当前证据 JSON</button>
+        </div>
+        <textarea id="evidenceText" spellcheck="false" placeholder="在此粘贴收到的证据包并导入"></textarea>
+        <div class="actions">
+          <button id="importEvidence">导入并重新证明</button>
+        </div>
+        <div id="evidenceList" class="stack"></div>
+      </article>
+      <article class="card">
+        <h2>恢复判定原则</h2>
+        <ul class="principles">
+          <li>只有日志和物理探测互相印证，才允许继续。</li>
+          <li>回填使用 <code>where id &gt; cursor order by id</code>，插入幂等，不按步骤名重跑。</li>
+          <li>DDL/切换在单个物理事务提交；中间名称组合无法证明时进入 BLOCKED。</li>
+          <li>完成必须同时具备终局结构、逐行数据一致和完整哈希链。</li>
+          <li>原始证据只追加保存；分析派生物带规则版本和来源指纹。</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
