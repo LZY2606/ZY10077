@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>结构迁移沙箱演练</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header>
+  <h1>结构迁移沙箱演练</h1>
+  <div class="sub">DDL · 分批回填 · 双写窗口 · 进程退出模拟 · 重启三态判定 · 证据重放</div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="defs" class="active">迁移定义</button>
+  <button data-tab="runs">演练运行</button>
+  <button data-tab="evidence">证据库</button>
+</nav>
+
+<!-- 定义 -->
+<section id="tab-defs" class="tab active">
+  <div class="grid2">
+    <div>
+      <h2>家族与版本</h2>
+      <div id="family-list" class="list"></div>
+    </div>
+    <div>
+      <h2 id="editor-title">定义编辑器</h2>
+      <div class="row">
+        <label>家族 <input id="def-family" placeholder="留空=新建家族"></label>
+        <label>我持有的版本指纹（乐观锁）<input id="def-base" placeholder="baseFingerprint"></label>
+      </div>
+      <textarea id="def-json" spellcheck="false"></textarea>
+      <div class="row">
+        <button id="btn-submit-def">提交（同源则推进 head）</button>
+        <button id="btn-branch-def" class="secondary">保存为分支</button>
+        <button id="btn-load-sample" class="secondary">载入示例 JSON</button>
+      </div>
+      <div id="def-msg" class="msg"></div>
+      <div id="conflict-box" class="conflict hidden">
+        <h3>⚠️ 定义冲突：另一浏览器已提交</h3>
+        <p>你持有的 <code id="conflict-base"></code> 已不是家族 head <code id="conflict-head"></code>。
+        请对比下方内容后重新合并，再以分支或新 head 提交。</p>
+        <pre id="conflict-current"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 运行 -->
+<section id="tab-runs" class="tab hidden">
+  <div class="grid2">
+    <div>
+      <h2>运行列表</h2>
+      <div class="row">
+        <select id="run-def-select"></select>
+        <select id="run-fault-select"><option value="">不注入故障</option></select>
+        <button id="btn-create-run">创建隔离副本</button>
+      </div>
+      <div id="run-list" class="list"></div>
+    </div>
+    <div>
+      <h2 id="run-title">运行详情</h2>
+      <div id="run-detail"><div class="hint">选择左侧运行</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 证据 -->
+<section id="tab-evidence" class="tab hidden">
+  <h2>演练证据</h2>
+  <div class="row">
+    <select id="export-select"></select>
+    <button id="btn-export">导出演练证据</button>
+  </div>
+  <h3>重新载入证据并重放验证</h3>
+  <textarea id="evidence-in" placeholder="粘贴此前导出的证据包 JSON"></textarea>
+  <div class="row">
+    <button id="btn-import">接收并验证（原始证据只追加）</button>
+  </div>
+  <div id="evidence-msg" class="msg"></div>
+  <h3>已接收证据（哈希链）</h3>
+  <div id="evidence-list" class="list"></div>
+  <h3>派生验证报告（带规则版本与来源指纹）</h3>
+  <div id="report-list" class="list"></div>
+</section>
+
+<div id="toast" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>

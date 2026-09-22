@@ -1,0 +1,168 @@
+{
+  "name": "订单表演练：orders -> orders_v2",
+  "description": "结构迁移、分批回填、双写窗口与外部通知副作用的完整故障演练",
+  "snapshot": {
+    "tables": [
+      {
+        "name": "orders",
+        "ddl": "CREATE TABLE orders (id BIGINT PRIMARY KEY, customer_id BIGINT NOT NULL, amount DECIMAL(12,2) NOT NULL, status VARCHAR(20) NOT NULL)",
+        "seed": [
+          {
+            "id": 1,
+            "customer_id": 101,
+            "amount": "19.90",
+            "status": "PAID"
+          },
+          {
+            "id": 2,
+            "customer_id": 102,
+            "amount": "42.00",
+            "status": "PAID"
+          },
+          {
+            "id": 3,
+            "customer_id": 103,
+            "amount": "7.50",
+            "status": "PENDING"
+          },
+          {
+            "id": 4,
+            "customer_id": 101,
+            "amount": "100.00",
+            "status": "PAID"
+          },
+          {
+            "id": 5,
+            "customer_id": 104,
+            "amount": "3.25",
+            "status": "CANCELLED"
+          }
+        ]
+      }
+    ]
+  },
+  "preconditions": [
+    {
+      "type": "TABLE_EXISTS",
+      "table": "orders"
+    }
+  ],
+  "steps": [
+    {
+      "id": "create_orders_v2",
+      "type": "DDL",
+      "description": "建立新结构：金额拆分为货币单位与状态规范化字段",
+      "ddl": "CREATE TABLE orders_v2 (id BIGINT PRIMARY KEY, customer_id BIGINT NOT NULL, amount DECIMAL(12,2) NOT NULL, state VARCHAR(20) NOT NULL)",
+      "probeType": "TABLE_EXISTS",
+      "probeTable": "orders_v2",
+      "compensate": "DROP TABLE IF EXISTS orders_v2",
+      "faults": [
+        {
+          "id": "after_apply",
+          "label": "DDL 生效后崩溃",
+          "phase": "AFTER_APPLY",
+          "expectVerdict": "COMMITTED"
+        }
+      ]
+    },
+    {
+      "id": "backfill_orders",
+      "type": "BACKFILL",
+      "description": "以稳定主键边界分批回填，每批 2 行",
+      "source": "orders",
+      "target": "orders_v2",
+      "pk": "id",
+      "batchSize": 2,
+      "mapping": {
+        "customer_id": "customer_id",
+        "amount": "amount",
+        "status": "state"
+      },
+      "faults": [
+        {
+          "id": "mid_batch",
+          "label": "第二批提交边界崩溃",
+          "phase": "MID_BATCH",
+          "expectVerdict": "RESUMABLE"
+        },
+        {
+          "id": "after_batches",
+          "label": "批次写完、终态确认前崩溃",
+          "phase": "AFTER_BATCHES",
+          "expectVerdict": "COMMITTED"
+        }
+      ]
+    },
+    {
+      "id": "dual_write_window",
+      "type": "DUAL_WRITE",
+      "description": "新旧双写窗口：写入页面向两表发流量，关窗自动对账",
+      "oldTable": "orders",
+      "newTable": "orders_v2",
+      "pk": "id",
+      "mapping": {
+        "customer_id": "customer_id",
+        "amount": "amount",
+        "status": "state"
+      },
+      "faults": [
+        {
+          "id": "after_open",
+          "label": "开窗完成后崩溃",
+          "phase": "AFTER_OPEN",
+          "expectVerdict": "WINDOW_OPEN"
+        },
+        {
+          "id": "after_reconcile",
+          "label": "关窗对账后崩溃",
+          "phase": "AFTER_RECONCILE",
+          "expectVerdict": "WINDOW_OPEN"
+        }
+      ]
+    },
+    {
+      "id": "notify_downstream",
+      "type": "SIDE_EFFECT",
+      "description": "通知下游切换读路径（不可由沙箱探针证明）",
+      "compensate": "CREATE TABLE IF NOT EXISTS notify_compensated (id BIGINT PRIMARY KEY)",
+      "faults": [
+        {
+          "id": "after_apply",
+          "label": "通知发出后崩溃，无法证明",
+          "phase": "AFTER_APPLY",
+          "expectVerdict": "UNCERTAIN"
+        }
+      ]
+    }
+  ],
+  "invariants": [
+    {
+      "id": "row_count",
+      "type": "ROW_COUNT_EQUAL",
+      "source": "orders",
+      "target": "orders_v2"
+    },
+    {
+      "id": "content_checksum",
+      "type": "ORDERED_CHECKSUM_EQUAL",
+      "source": "orders",
+      "target": "orders_v2",
+      "pk": "id",
+      "columns": [
+        "id",
+        "customer_id"
+      ]
+    }
+  ],
+  "readPaths": [
+    {
+      "label": "客户 101 的订单（旧路径 vs 新路径）",
+      "oldSql": "SELECT id, customer_id FROM :schema.orders WHERE customer_id=101 ORDER BY id",
+      "newSql": "SELECT id, customer_id FROM :schema.orders_v2 WHERE customer_id=101 ORDER BY id",
+      "columns": [
+        "id",
+        "customer_id"
+      ]
+    }
+  ]
+}

@@ -34,3 +34,8 @@ coverage/
 .vite/
 .turbo/
 *.tsbuildinfo
+
+# 本地 H2 文件库
+data/
+*.mv.db
+*.trace.db

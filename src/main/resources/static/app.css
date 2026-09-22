@@ -1,0 +1,68 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "PingFang SC", "Segoe UI", sans-serif;
+  background: #0f1420; color: #e6ebf5; }
+header { padding: 18px 24px; background: linear-gradient(120deg,#1b2a4a,#10233f);
+  border-bottom: 1px solid #2a3a5c; }
+header h1 { margin: 0; font-size: 20px; }
+.sub { color: #93a4c4; font-size: 13px; margin-top: 4px; }
+.tabs { display: flex; gap: 4px; padding: 0 24px; background: #131b2e; border-bottom: 1px solid #2a3a5c; }
+.tabs button { background: none; border: none; color: #9fb0d0; padding: 12px 18px; cursor: pointer;
+  font-size: 14px; border-bottom: 2px solid transparent; }
+.tabs button.active { color: #fff; border-bottom-color: #5b9dff; }
+.tab { padding: 20px 24px; }
+.hidden { display: none !important; }
+.grid2 { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+h2 { font-size: 15px; margin: 0 0 10px; color: #cdd9f2; }
+h3 { font-size: 13px; color: #9fb0d0; margin: 16px 0 8px; }
+.list { display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow: auto; }
+.card { background: #172136; border: 1px solid #28365a; border-radius: 8px; padding: 10px 12px;
+  cursor: pointer; font-size: 13px; }
+.card:hover { border-color: #4b6daf; }
+.card.selected { border-color: #5b9dff; box-shadow: 0 0 0 1px #5b9dff inset; }
+.card .fp { font-family: ui-monospace, monospace; color: #7f93bb; font-size: 11px; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.CREATED { background:#3a3f2a; color:#d9d48a; }
+.RUNNING { background:#243a5e; color:#8ec0ff; }
+.COMMITTED { background:#1e4433; color:#88e0a0; }
+.HALTED { background:#4a2330; color:#ff9aa8; }
+.ROLLING_BACK { background:#4a3a20; color:#ffce8a; }
+.ROLLED_BACK { background:#3b3b4a; color:#b9b9d0; }
+.FAILED { background:#4a2330; color:#ff7d8e; }
+.WINDOW_OPEN { background:#243a5e; color:#8ec0ff; }
+.PENDING { background:#2a2f44; color:#93a0c0; }
+textarea { width: 100%; height: 34vh; background:#0c111d; color:#d7e2f8;
+  border:1px solid #2a3a5c; border-radius:8px; padding:10px; font-family:ui-monospace,monospace;
+  font-size:12px; }
+#evidence-in { height: 18vh; }
+input, select { background:#0c111d; color:#d7e2f8; border:1px solid #2a3a5c; border-radius:6px;
+  padding:6px 8px; font-size:12px; width: 100%; }
+button { background:#2f6fde; color:#fff; border:none; border-radius:6px; padding:8px 14px;
+  cursor:pointer; font-size:13px; }
+button:hover { background:#3f80ef; }
+button.secondary { background:#2a3550; }
+button.danger { background:#b3414b; }
+button:disabled { opacity:.45; cursor:not-allowed; }
+.row { display:flex; gap:8px; margin:8px 0; align-items:center; flex-wrap:wrap; }
+.row label { flex:1; font-size:12px; color:#9fb0d0; }
+.msg { margin-top:8px; font-size:13px; }
+.msg.ok { color:#88e0a0; } .msg.err { color:#ff9aa8; }
+.conflict { margin-top:12px; padding:12px; border:1px solid #b3414b; border-radius:8px; background:#2a1620; }
+.conflict pre { max-height: 24vh; overflow:auto; font-size:11px; background:#0c111d; padding:8px; border-radius:6px; }
+.hint { color:#7f93bb; font-size:13px; }
+.step { background:#141d30; border:1px solid #28365a; border-radius:8px; padding:10px; margin-bottom:8px; }
+.step h4 { margin:0 0 6px; font-size:13px; display:flex; gap:8px; align-items:center; }
+table { border-collapse:collapse; width:100%; font-size:12px; }
+th,td { border-bottom:1px solid #28365a; padding:4px 6px; text-align:left; vertical-align:top; }
+th { color:#9fb0d0; font-weight:600; }
+pre.payload { font-size:11px; color:#a9badc; white-space:pre-wrap; word-break:break-all;
+  max-height:120px; overflow:auto; background:#0c111d; padding:6px; border-radius:6px; margin:2px 0; }
+.journal { max-height:30vh; overflow:auto; }
+.verdict-UNCERTAIN,.verdict-HALTED { color:#ff9aa8; font-weight:700; }
+.verdict-COMMITTED,.verdict-FINALIZED { color:#88e0a0; }
+.verdict-RESUMABLE,.verdict-WINDOW_OPEN,.verdict-NOT_STARTED { color:#8ec0ff; }
+.toast { position:fixed; bottom:20px; right:20px; background:#202c46; border:1px solid #4b6daf;
+  padding:10px 14px; border-radius:8px; font-size:13px; max-width:420px; }
+code { background:#0c111d; padding:1px 5px; border-radius:4px; font-size:11px; }
+.small { font-size:11px; color:#7f93bb; }
+.kv { display:grid; grid-template-columns:110px 1fr; gap:2px 10px; font-size:12px; margin:6px 0; }
+.kv b { color:#9fb0d0; font-weight:500; }
